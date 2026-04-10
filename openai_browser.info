@@ -1,0 +1,9 @@
+name = OpenAI Browser Provider
+description = Provides a Backdrop OpenAI provider using the browser's AI APIs (e.g., Chrome window.ai).
+package = OpenAI
+backdrop = 1.x
+type = module
+
+dependencies[] = openai
+dependencies[] = key
+
