@@ -1,6 +1,6 @@
-# OpenAI Browser
+# AI Provider Browser
 
-Browser provider for the Backdrop CMS OpenAI module.
+Browser Native Language Model API provider for the Backdrop CMS AI module.
 
 ## Installation
 
@@ -8,7 +8,7 @@ Browser provider for the Backdrop CMS OpenAI module.
 
 ## Issues
 
-Bugs and feature requests should be reported in the [Issue Queue](https://github.com/backdrop-contrib/openai_browser/issues).
+Bugs and feature requests should be reported in the [Issue Queue](https://github.com/backdrop-contrib/ai_provider_browser/issues).
 
 ## Current Maintainer
 
@@ -16,9 +16,10 @@ Bugs and feature requests should be reported in the [Issue Queue](https://github
 
 ## Credits
 
-- Created for Backdrop CMS by [Justin Keiser](https://github.com/keiserjb).  Inspired by the [Drupal implementation](https://www.drupal.org/project/ai_provider_browser).
+- Created for Backdrop CMS by [Justin Keiser](https://github.com/keiserjb).
+
+- Developed with AI assistance.
 
 ## License
 
 This project is GPL v2 software. See the LICENSE.txt file in this directory for complete text.
-

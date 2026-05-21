@@ -2,18 +2,18 @@
 
 /**
  * @file
- * Hook implementations for the OpenAI Browser Provider module.
+ * Hook implementations for the AI Browser provider module.
  */
 
 /**
- * Implements hook_openai_provider_info().
+ * Implements hook_ai_provider_info().
  */
-function openai_browser_openai_provider_info() {
+function ai_provider_browser_ai_provider_info() {
   return [
     'browser' => [
       'label' => t('Browser Client'),
       'description' => t('Provides the possibility to trigger AI from the browser - currently Google Chrome with the LanguageModel/Translation/Summarizer APIs enabled.'),
-      'class' => 'BrowserAdapter',
+      'class' => 'AIBrowserAdapter',
       'website' => 'https://developer.chrome.com/docs/ai/prompt-api',
     ],
   ];
@@ -22,11 +22,11 @@ function openai_browser_openai_provider_info() {
 /**
  * Implements hook_config_info().
  */
-function openai_browser_config_info() {
+function ai_provider_browser_config_info() {
   return [
-    'openai_browser.settings' => [
-      'label' => t('OpenAI Browser Settings'),
-      'group' => t('Configuration'),
+    'ai_provider_browser.settings' => [
+      'label' => t('AI Browser Settings'),
+      'group' => t('AI'),
     ],
   ];
 }
@@ -34,7 +34,7 @@ function openai_browser_config_info() {
 /**
  * Return normalized browser provider configuration.
  *
- * The OpenAI settings form stores provider settings under
+ * The AI settings form stores provider settings under
  * `providers[browser_settings]`. Nested fieldsets such as `browser_features`
  * and `browser_download_messages` can therefore end up saved as nested arrays.
  * This helper flattens those legacy/nested values so the runtime code and the
@@ -42,14 +42,14 @@ function openai_browser_config_info() {
  *
  * @param array|null $provider_config
  *   Optional raw provider config to normalize. When omitted, the config is
- *   loaded from `openai.settings`.
+ *   loaded from `ai.settings`.
  *
  * @return array
  *   Normalized provider configuration.
  */
-function openai_browser_get_provider_config(?array $provider_config = NULL) {
+function ai_provider_browser_get_provider_config(?array $provider_config = NULL) {
   if ($provider_config === NULL) {
-    $providers_root = config_get('openai.settings', 'providers') ?: [];
+    $providers_root = config_get('ai.settings', 'providers') ?: [];
     $provider_config = !empty($providers_root['browser']) && is_array($providers_root['browser']) ? $providers_root['browser'] : [];
   }
 
@@ -79,10 +79,10 @@ function openai_browser_get_provider_config(?array $provider_config = NULL) {
  *   Optional normalized provider configuration.
  *
  * @return bool
- *   TRUE when the provider is enabled in OpenAI settings.
+ *   TRUE when the provider is enabled in AI settings.
  */
-function openai_browser_is_enabled(?array $provider_config = NULL) {
-  $provider_config = openai_browser_get_provider_config($provider_config);
+function ai_provider_browser_is_enabled(?array $provider_config = NULL) {
+  $provider_config = ai_provider_browser_get_provider_config($provider_config);
 
   return !empty($provider_config['enabled']);
 }
@@ -98,10 +98,10 @@ function openai_browser_is_enabled(?array $provider_config = NULL) {
  * @return bool
  *   TRUE when the provider is enabled and the feature is enabled.
  */
-function openai_browser_user_can_use($operation, ?array $provider_config = NULL) {
-  $provider_config = openai_browser_get_provider_config($provider_config);
+function ai_provider_browser_user_can_use($operation, ?array $provider_config = NULL) {
+  $provider_config = ai_provider_browser_get_provider_config($provider_config);
 
-  if (!openai_browser_is_enabled($provider_config)) {
+  if (!ai_provider_browser_is_enabled($provider_config)) {
     return FALSE;
   }
 
@@ -130,7 +130,7 @@ function openai_browser_user_can_use($operation, ?array $provider_config = NULL)
 /**
  * Ensure the PHP session is available for browser-provider request storage.
  */
-function openai_browser_ensure_session() {
+function ai_provider_browser_ensure_session() {
   if (session_status() !== PHP_SESSION_ACTIVE) {
     // If Backdrop's static flag is still set but PHP says the session is
     // inactive, it means the session was closed via session_write_close().
@@ -146,17 +146,17 @@ function openai_browser_ensure_session() {
 }
 
 /**
- * Implements hook_openai_provider_settings_alter().
+ * Implements hook_ai_provider_settings_alter().
  *
- * Adds browser-specific settings to the main OpenAI settings form.
+ * Adds browser-specific settings to the main AI settings form.
  */
-function openai_browser_openai_provider_settings_alter(&$settings, $context) {
+function ai_provider_browser_ai_provider_settings_alter(&$settings, $context) {
   // Only add settings if Browser is the selected provider
   if ($context['provider'] !== 'browser') {
     return;
   }
 
-  $provider_config = openai_browser_get_provider_config();
+  $provider_config = ai_provider_browser_get_provider_config();
 
   $settings['browser_timeout'] = [
     '#type' => 'number',
@@ -246,15 +246,15 @@ function openai_browser_openai_provider_settings_alter(&$settings, $context) {
   // Add custom submit handler to normalize nested browser settings into the
   // flat structure expected by the runtime code.
   if (isset($context['form'])) {
-    $context['form']['#submit'][] = 'openai_browser_settings_submit';
+    $context['form']['#submit'][] = 'ai_provider_browser_settings_submit';
   }
 }
 
 /**
  * Custom submit handler to save browser-specific settings.
  */
-function openai_browser_settings_submit($form, &$form_state) {
-  $central = config('openai.settings');
+function ai_provider_browser_settings_submit($form, &$form_state) {
+  $central = config('ai.settings');
   $providers = $central->get('providers') ?: [];
   if (!isset($providers['browser']) || !is_array($providers['browser'])) {
     $providers['browser'] = [];
@@ -262,7 +262,7 @@ function openai_browser_settings_submit($form, &$form_state) {
 
   $providers_values = !empty($form_state['values']['providers']) && is_array($form_state['values']['providers']) ? $form_state['values']['providers'] : [];
   $browser_settings = !empty($providers_values['browser_settings']) && is_array($providers_values['browser_settings']) ? $providers_values['browser_settings'] : [];
-  $browser_settings = openai_browser_get_provider_config($browser_settings);
+  $browser_settings = ai_provider_browser_get_provider_config($browser_settings);
 
   $providers['browser']['enabled'] = !empty($providers_values['enabled_providers_browser']) ? 1 : 0;
 
@@ -293,31 +293,31 @@ function openai_browser_settings_submit($form, &$form_state) {
 /**
  * Implements hook_autoload_info().
  */
-function openai_browser_autoload_info() {
+function ai_provider_browser_autoload_info() {
   return [
-    'BrowserAdapter' => 'includes/BrowserAdapter.php',
+    'AIBrowserAdapter' => 'includes/AIBrowserAdapter.php',
   ];
 }
 
 /**
  * Implements hook_menu().
  */
-function openai_browser_menu() {
+function ai_provider_browser_menu() {
   $items = [];
 
   // Poll for requests.
-  $items['openai-browser/poll'] = [
+  $items['ai-browser/poll'] = [
     'title' => 'Poll for requests',
-    'page callback' => 'openai_browser_poll_page',
-    'access callback' => 'openai_browser_access_check',
+    'page callback' => 'ai_provider_browser_poll_page',
+    'access callback' => 'ai_provider_browser_access_check',
     'type' => MENU_CALLBACK,
   ];
 
   // Submit result.
-  $items['openai-browser/submit'] = [
+  $items['ai-browser/submit'] = [
     'title' => 'Submit result',
-    'page callback' => 'openai_browser_submit_page',
-    'access callback' => 'openai_browser_access_check',
+    'page callback' => 'ai_provider_browser_submit_page',
+    'access callback' => 'ai_provider_browser_access_check',
     'type' => MENU_CALLBACK,
   ];
 
@@ -327,17 +327,17 @@ function openai_browser_menu() {
 /**
  * Access check callback for browser AI endpoints.
  */
-function openai_browser_access_check() {
-  $provider_config = openai_browser_get_provider_config();
+function ai_provider_browser_access_check() {
+  $provider_config = ai_provider_browser_get_provider_config();
 
-  $access = openai_browser_user_can_use('chat', $provider_config)
-    || openai_browser_user_can_use('translate', $provider_config)
-    || openai_browser_user_can_use('summarize', $provider_config);
+  $access = ai_provider_browser_user_can_use('chat', $provider_config)
+    || ai_provider_browser_user_can_use('translate', $provider_config)
+    || ai_provider_browser_user_can_use('summarize', $provider_config);
 
   if (!$access) {
     global $user;
     // Help debug why the browser client might be failing to poll.
-    watchdog('openai_browser', 'Access denied to browser AI endpoint for user @uid. If this is 0, the session is likely being lost.', [
+    watchdog('ai_provider_browser', 'Access denied to browser AI endpoint for user @uid. If this is 0, the session is likely being lost.', [
       '@uid' => $user->uid,
     ], WATCHDOG_DEBUG);
   }
@@ -348,7 +348,7 @@ function openai_browser_access_check() {
 /**
  * Implements hook_permission().
  */
-function openai_browser_permission() {
+function ai_provider_browser_permission() {
   return [
     'use browser ai chat' => [
       'title' => t('Use Browser AI Chat/Prompt'),
@@ -368,24 +368,24 @@ function openai_browser_permission() {
 /**
  * Page callback: Poll for pending requests.
  */
-function openai_browser_poll_page() {
-  openai_browser_ensure_session();
+function ai_provider_browser_poll_page() {
+  ai_provider_browser_ensure_session();
 
   $requests = [];
-  if (isset($_SESSION['openai_browser_requests'])) {
-    $provider_config = openai_browser_get_provider_config();
+  if (isset($_SESSION['ai_provider_browser_requests'])) {
+    $provider_config = ai_provider_browser_get_provider_config();
     $timeout = !empty($provider_config['browser_timeout']) ? (int) $provider_config['browser_timeout'] : 60;
 
-    foreach ($_SESSION['openai_browser_requests'] as $uuid => $request) {
+    foreach ($_SESSION['ai_provider_browser_requests'] as $uuid => $request) {
       $created = !empty($request['created']) ? (int) $request['created'] : 0;
 
       // Remove requests that are so old the PHP waiter has definitely already
       // timed out and abandoned them (2× timeout as a safe margin). These are
       // zombie requests that would loop forever without this cleanup.
       if ($created && (REQUEST_TIME - $created > $timeout * 2)) {
-        unset($_SESSION['openai_browser_requests'][$uuid]);
-        cache_clear_all('openai_browser_seen:' . $uuid, 'cache');
-        cache_clear_all('openai_browser_result:' . $uuid, 'cache');
+        unset($_SESSION['ai_provider_browser_requests'][$uuid]);
+        cache_clear_all('ai_provider_browser_seen:' . $uuid, 'cache');
+        cache_clear_all('ai_provider_browser_result:' . $uuid, 'cache');
         continue;
       }
 
@@ -399,11 +399,11 @@ function openai_browser_poll_page() {
       }
 
       // Mark as seen and include in the response.
-      $_SESSION['openai_browser_requests'][$uuid]['browser_seen'] = REQUEST_TIME;
-      $requests[$uuid] = $_SESSION['openai_browser_requests'][$uuid];
+      $_SESSION['ai_provider_browser_requests'][$uuid]['browser_seen'] = REQUEST_TIME;
+      $requests[$uuid] = $_SESSION['ai_provider_browser_requests'][$uuid];
 
       // Also update cache for more reliable concurrent signaling.
-      cache_set('openai_browser_seen:' . $uuid, REQUEST_TIME, 'cache', REQUEST_TIME + 600);
+      cache_set('ai_provider_browser_seen:' . $uuid, REQUEST_TIME, 'cache', REQUEST_TIME + 600);
     }
   }
 
@@ -414,31 +414,35 @@ function openai_browser_poll_page() {
 /**
  * Page callback: Submit a result for a request.
  */
-function openai_browser_submit_page() {
-  openai_browser_ensure_session();
+function ai_provider_browser_submit_page() {
+  ai_provider_browser_ensure_session();
 
   $data = json_decode(file_get_contents('php://input'), TRUE);
   if ($data && !empty($data['uuid'])) {
     $uuid = $data['uuid'];
+    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid)) {
+      backdrop_json_output(['status' => 'error', 'message' => 'Invalid uuid']);
+      backdrop_exit();
+    }
     $status = !empty($data['status']) ? $data['status'] : 'completed';
     $result_data = [
       'status' => $status,
       'result' => array_key_exists('result', $data) ? $data['result'] : NULL,
       'error' => !empty($data['error']) ? $data['error'] : NULL,
     ];
-    $_SESSION['openai_browser_results'][$uuid] = $result_data;
+    $_SESSION['ai_provider_browser_results'][$uuid] = $result_data;
 
     // Also update cache for more reliable concurrent signaling.
-    cache_set('openai_browser_result:' . $uuid, $result_data, 'cache', REQUEST_TIME + 600);
+    cache_set('ai_provider_browser_result:' . $uuid, $result_data, 'cache', REQUEST_TIME + 600);
 
     if ($status !== 'completed' && !empty($data['error'])) {
-      watchdog('openai_browser', 'Browser client error for request @uuid: @error', [
+      watchdog('ai_provider_browser', 'Browser client error for request @uuid: @error', [
         '@uuid' => $uuid,
         '@error' => $data['error'],
       ], WATCHDOG_WARNING);
     }
     else {
-      watchdog('openai_browser', 'Browser client submitted @status for request @uuid.', [
+      watchdog('ai_provider_browser', 'Browser client submitted @status for request @uuid.', [
         '@uuid' => $uuid,
         '@status' => $status,
       ], WATCHDOG_INFO);
@@ -455,30 +459,30 @@ function openai_browser_submit_page() {
  * @param array $provider_config
  *   Normalized provider configuration.
  */
-function openai_browser_attach_assets(array $provider_config) {
+function ai_provider_browser_attach_assets(array $provider_config) {
   static $attached = FALSE;
   if ($attached) {
     return;
   }
 
-  if (!openai_browser_is_enabled($provider_config)) {
+  if (!ai_provider_browser_is_enabled($provider_config)) {
     return;
   }
 
-  $chat_enabled = openai_browser_user_can_use('chat', $provider_config);
-  $translate_enabled = openai_browser_user_can_use('translate', $provider_config);
-  $summarize_enabled = openai_browser_user_can_use('summarize', $provider_config);
+  $chat_enabled = ai_provider_browser_user_can_use('chat', $provider_config);
+  $translate_enabled = ai_provider_browser_user_can_use('translate', $provider_config);
+  $summarize_enabled = ai_provider_browser_user_can_use('summarize', $provider_config);
 
   if (!$chat_enabled && !$translate_enabled && !$summarize_enabled) {
     return;
   }
 
-  $path = backdrop_get_path('module', 'openai_browser');
+  $path = backdrop_get_path('module', 'ai_provider_browser');
 
   $settings = [
-    'openaiBrowser' => [
-      'pollUrl' => url('openai-browser/poll', ['absolute' => TRUE]),
-      'submitUrl' => url('openai-browser/submit', ['absolute' => TRUE]),
+    'aiBrowser' => [
+      'pollUrl' => url('ai-browser/poll', ['absolute' => TRUE]),
+      'submitUrl' => url('ai-browser/submit', ['absolute' => TRUE]),
       'timeout' => isset($provider_config['browser_timeout']) ? (int) $provider_config['browser_timeout'] : 60,
       'pollingInterval' => isset($provider_config['browser_polling_interval']) ? (int) $provider_config['browser_polling_interval'] : 5,
       'foregroundOnly' => isset($provider_config['browser_foreground_only']) ? (bool) $provider_config['browser_foreground_only'] : TRUE,
@@ -496,23 +500,23 @@ function openai_browser_attach_assets(array $provider_config) {
   ];
 
   backdrop_add_js($settings, 'setting');
-  backdrop_add_js($path . '/js/openai_browser.js');
+  backdrop_add_js($path . '/js/ai_provider_browser.js');
   $attached = TRUE;
 }
 
 /**
  * Implements hook_init().
  */
-function openai_browser_init() {
-  $provider_config = openai_browser_get_provider_config();
-  openai_browser_attach_assets($provider_config);
+function ai_provider_browser_init() {
+  $provider_config = ai_provider_browser_get_provider_config();
+  ai_provider_browser_attach_assets($provider_config);
 }
 
 /**
  * Implements hook_page_build().
  */
-function openai_browser_page_build(&$page) {
-  $provider_config = openai_browser_get_provider_config();
-  openai_browser_attach_assets($provider_config);
+function ai_provider_browser_page_build(&$page) {
+  $provider_config = ai_provider_browser_get_provider_config();
+  ai_provider_browser_attach_assets($provider_config);
 }
 

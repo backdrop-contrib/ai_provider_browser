@@ -1,18 +1,18 @@
 (function ($) {
   'use strict';
 
-  Backdrop.behaviors.openaiBrowser = {
+  Backdrop.behaviors.aiBrowser = {
     attach: function (context, settings) {
-      if (!settings.openaiBrowser) {
+      if (!settings.aiBrowser) {
         return;
       }
 
-      if (context !== document || window.__openaiBrowserAttached) {
+      if (context !== document || window.__aiBrowserAttached) {
         return;
       }
-      window.__openaiBrowserAttached = true;
+      window.__aiBrowserAttached = true;
 
-      const config = settings.openaiBrowser;
+      const config = settings.aiBrowser;
       let isPolling = false;
 
       const withTimeout = (promise, ms) => Promise.race([
@@ -54,7 +54,7 @@
             return caps.available || 'no';
           }
         } catch (e) {
-          console.error(`OpenAI Browser ${feature} availability error:`, e);
+          console.error(`AI Browser ${feature} availability error:`, e);
         }
         return 'no';
       };
@@ -88,7 +88,7 @@
             }
           }
         } catch (e) {
-          console.error('OpenAI Browser poll error:', e);
+          console.error('AI Browser poll error:', e);
         } finally {
           isPolling = false;
         }
@@ -107,7 +107,7 @@
 
           await submitResult(request.uuid, result);
         } catch (e) {
-          console.error('OpenAI Browser process error:', e);
+          console.error('AI Browser process error:', e);
           await submitResult(request.uuid, null, e.message);
         }
       };

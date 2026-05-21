@@ -1,0 +1,8 @@
+name = AI Provider Browser
+description = Browser provider (Google Chrome) for the AI module.
+package = AI
+backdrop = 1.x
+type = module
+dependencies[] = ai
+dependencies[] = key
+
