@@ -2,6 +2,7 @@ name = AI Provider Browser
 description = Browser provider (Google Chrome) for the AI module.
 package = AI
 backdrop = 1.x
+php = 8.2
 type = module
 dependencies[] = ai
 dependencies[] = key
