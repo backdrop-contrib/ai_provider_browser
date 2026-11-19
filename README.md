@@ -1,10 +1,12 @@
 # AI Provider Browser
 
-Browser Native Language Model API provider for the Backdrop CMS AI module.
+Run AI prompts, translation, and summarization in the visitor’s browser. Useful for interactive features when the browser and device provide the required built-in AI APIs.
 
 ## Installation
 
-- Install this module using the official [Backdrop CMS instructions](https://backdropcms.org/user-guide/modules).
+Install and enable this module with AI and Key. [Backdrop module installation guide](https://backdropcms.org/user-guide/modules)
+
+Enable the Browser provider and the appropriate role permissions in Backdrop. A compatible browser and an active site tab are required. [Setup and troubleshooting](https://github.com/backdrop-contrib/ai_provider_browser/wiki)
 
 ## Issues
 
